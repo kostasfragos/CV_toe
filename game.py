@@ -75,6 +75,10 @@ def ai_play(board, symbol):
             break
 
     # άμυνα
+    if symbol == X:
+        enemy_symbol = O
+    # ??????
+    
     enemy_symbol = -1 # ?????
     for line in lines:
         count_s = 0 
