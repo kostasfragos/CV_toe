@@ -7,6 +7,7 @@ circle_width = 8
 offset = 40
 symbol_radius = 70
 
+# συντεταγμένες κέντρων κουτιών
 symbol_position = [
     (0.26, 0.235),
     (0.5, 0.235),
@@ -19,6 +20,7 @@ symbol_position = [
     (0.74, 0.765),
 ]
 
+# συνάρτηση κύκλων
 def create_circle(canvas, x, y, r, **kwargs):
     return canvas.create_oval(x-r, y-r, x+r, y+r, **kwargs)
 
@@ -50,10 +52,12 @@ def draw_X(x, y):
 # ζωγράδισε O
 def draw_O(x, y):
     create_circle(canvas, x, y, symbol_radius, outline='blue', width=10)
-    
-draw_X(0.26*W, 0.5*H)
-draw_O(0.74*W, 0.235*H)
 
+# σχεδίασε σύμβολα
+for i in range(9):
+    draw_X(symbol_position[i][0]*W, symbol_position[i][1]*H)
+    draw_O(symbol_position[i][0]*W, symbol_position[i][1]*H)
+    
 
 window.mainloop()
 
