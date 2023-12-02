@@ -1,4 +1,5 @@
 import tkinter as tk
+from game_class import Game
 
 W = 1024
 H = 720
@@ -47,17 +48,58 @@ canvas.create_line(0.15*W, 0.63*H, 0.85*W, 0.63*H, width=circle_width)
 
 # ζωγράφισε Χ
 def draw_X(x, y):
-    canvas.create_line(x-symbol_radius, y-symbol_radius, x+symbol_radius, y+symbol_radius, fill='red', width=10)
-    canvas.create_line(x-symbol_radius, y+symbol_radius, x+symbol_radius, y-symbol_radius, fill='red', width=10)
+    canvas.create_line(x-symbol_radius, y-symbol_radius, x+symbol_radius, y+symbol_radius, fill='red', width=10, tag='S')
+    canvas.create_line(x-symbol_radius, y+symbol_radius, x+symbol_radius, y-symbol_radius, fill='red', width=10, tag='S')
 # ζωγράδισε O
 def draw_O(x, y):
-    create_circle(canvas, x, y, symbol_radius, outline='blue', width=10)
+    create_circle(canvas, x, y, symbol_radius, outline='blue', width=10, tag='S')
+
+
+def place_symbol(pos, symbol):
+    if pos < 0 or pos > 8:
+        return
+    
+    x, y = symbol_position[pos]
+    x = x * W
+    y = y * H
+    if symbol == Game.X:
+        draw_X(x, y)
+    elif symbol == Game.O:
+        draw_O(x, y)
+
+def render():
+    canvas.delete('S')
+
+    for i, symbol in enumerate(game.board):
+        place_symbol(i, symbol)
+
+
+game = Game()
+def on_reset(evt=None):
+    global game
+    game = Game()
+    render()
+
+def on_space(evt=None):
+    game.ai_play()
+    game.next_player()
+    render()
+    
 
 # σχεδίασε σύμβολα
-for i in range(9):
-    draw_X(symbol_position[i][0]*W, symbol_position[i][1]*H)
-    draw_O(symbol_position[i][0]*W, symbol_position[i][1]*H)
-    
+# for i in range(9):
+# for position in symbol_position:
+#     # print(position)
+#     x, y = position
+#     draw_X(x*W, y*H)
+#     draw_O(x*W, y*H)
+
+# place_symbol(0, 'X')
+# place_symbol(1, 'O')
+
+
+window.bind('<space>', on_space)
+window.bind('<Return>', on_reset)
 
 window.mainloop()
 
