@@ -1,5 +1,9 @@
 import tkinter as tk
 from game_class import Game
+import asyncio
+from websockets.sync.client import connect
+import json 
+
 
 W = 1024
 H = 720
@@ -20,6 +24,28 @@ symbol_position = [
     (0.5, 0.765),
     (0.74, 0.765),
 ]
+
+def request_state():
+    with connect("ws://reborn:9999") as websocket:
+        websocket.send("state")
+        message = websocket.recv()
+        camera_board = json.loads(message)
+    return camera_board
+        # print(f"Received: {message}")
+
+def get_new_position():
+    camera_board = request_state()
+
+    for i in range(9):
+        if game.board[i] != camera_board[i]:
+            change_point = i
+            symbol = camera_board[i]
+            return change_point, symbol
+        
+def update(evt=None):
+    pos, s = get_new_position()
+    place_symbol(pos, s)
+    game.board[pos] = s
 
 # συνάρτηση κύκλων
 def create_circle(canvas, x, y, r, **kwargs):
@@ -100,6 +126,6 @@ def on_space(evt=None):
 
 window.bind('<space>', on_space)
 window.bind('<Return>', on_reset)
+window.bind('c', update)
 
 window.mainloop()
-

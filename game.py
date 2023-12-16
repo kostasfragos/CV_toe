@@ -1,8 +1,31 @@
+import asyncio
+from websockets.sync.client import connect
+import json 
+
+
 X = "X"
 O = "O"
 KENO = " "
-
 game_list = [KENO]*9
+
+
+def request_state():
+    with connect("ws://reborn:9999") as websocket:
+        websocket.send("state")
+        message = websocket.recv()
+        camera_board = json.loads(message)
+    return camera_board
+        # print(f"Received: {message}")
+
+def get_new_position():
+    camera_board = request_state()
+
+    for i in range(9):
+        if board[i] != camera_board[i]:
+            change_point = i
+            symbol = camera_board[i]
+            return change_point, symbol
+
 
 def display_board(board):
     print('', board[0], '|', board[1], '|', board[2])
@@ -135,3 +158,5 @@ display_board(game_list)
 
 if winner!=KENO:
     print("Νίκησε ο", winner) 
+
+
