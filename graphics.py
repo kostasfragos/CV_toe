@@ -1,7 +1,7 @@
 import tkinter as tk
 from game_class import Game
 import asyncio
-from websockets.sync.client import connect
+from websockets.server import serve
 import json 
 
 
@@ -25,27 +25,50 @@ symbol_position = [
     (0.74, 0.765),
 ]
 
-def request_state():
-    with connect("ws://reborn:9999") as websocket:
-        websocket.send("state")
-        message = websocket.recv()
+# def request_state():
+#     with connect("ws://reborn:9999") as websocket:
+#         websocket.send("state")
+#         message = websocket.recv()
+#         camera_board = json.loads(message)
+#     return camera_board
+#         # print(f"Received: {message}")
+
+# def get_new_position():
+#     camera_board = request_state()
+
+#     for i in range(9):
+#         if game.board[i] != camera_board[i]:
+#             change_point = i
+#             symbol = camera_board[i]
+#             return change_point, symbol
+
+
+async def read_state(websocket):
+    async for message in websocket:
         camera_board = json.loads(message)
-    return camera_board
-        # print(f"Received: {message}")
-
-def get_new_position():
-    camera_board = request_state()
-
-    for i in range(9):
-        if game.board[i] != camera_board[i]:
-            change_point = i
-            symbol = camera_board[i]
-            return change_point, symbol
+        print(camera_board)
+        change_point = None
+        for i in range(9):
+            if game.board[i] != camera_board[i]:
+                change_point = i
+                symbol = camera_board[i]
+                
         
-def update(evt=None):
-    pos, s = get_new_position()
-    place_symbol(pos, s)
-    game.board[pos] = s
+        if change_point is None:
+            return
+        place_symbol(change_point, symbol)
+        game.board[change_point] = symbol
+
+        
+
+# async def main():
+#     async with serve(read_state, "0.0.0.0", 8765):
+#         await asyncio.Future()  # run forever
+        
+# def update(evt=None):
+#     pos, s = get_new_position()
+#     place_symbol(pos, s)
+#     game.board[pos] = s
 
 # συνάρτηση κύκλων
 def create_circle(canvas, x, y, r, **kwargs):
@@ -122,10 +145,24 @@ def on_space(evt=None):
 
 # place_symbol(0, 'X')
 # place_symbol(1, 'O')
+def server():
+    print('Starting server')
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    # setup a server
+    asyncio.get_event_loop().run_until_complete(serve(read_state, "0.0.0.0", 8765))
+    # keep thread running
+    asyncio.get_event_loop().run_forever()
 
 
+from threading import Thread
+t = Thread(target=server)
+t.start()
 window.bind('<space>', on_space)
 window.bind('<Return>', on_reset)
-window.bind('c', update)
+# window.bind('c', update)
 
 window.mainloop()
+
+asyncio.get_event_loop().stop()
+t.join()
+
